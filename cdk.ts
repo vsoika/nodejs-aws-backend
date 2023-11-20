@@ -26,12 +26,14 @@ const getProductsList = new NodejsFunction(stack, "GetProductsListLambda", {
   ...lambdaProps,
   entry: "src/handlers/getProductList/getProductList.ts",
   functionName: "getProductsList",
+  handler: "lambdaHandler",
 });
 
 const getProductById = new NodejsFunction(stack, "GetProductByIdLambda", {
   ...lambdaProps,
   entry: "src/handlers/getProductById/getProductById.ts",
   functionName: "getProductById",
+  handler: "lambdaHandler",
 });
 
 const api = new apiGateway.HttpApi(stack, "ProductApi", {
@@ -69,5 +71,5 @@ api.addRoutes({
 });
 
 new cdk.CfnOutput(stack, "ApiUrl", {
-  value: `${api.url}${PRODUCTS_URL}`,
+  value: `${api.url}products`,
 });
