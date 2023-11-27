@@ -7,6 +7,8 @@
     "synth": "cdk synth",
     "cdk:bootstrap": "cdk bootstrap",
     "cdk:deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "fill:db": "ts-node src/utils/fillDBTablesWithJsonData/index.ts",
     "test": "jest",
     "lint": "eslint --ignore-path .gitignore --fix src",
     "prettier": "prettier src --write"
@@ -14,6 +16,9 @@
   "dependencies": {
     "@aws-cdk/aws-apigatewayv2-alpha": "^2.110.0-alpha.0",
     "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.110.0-alpha.0",
+    "@aws-sdk/client-dynamodb": "^3.454.0",
+    "@aws-sdk/lib-dynamodb": "^3.454.0",
+    "@aws-sdk/util-dynamodb": "^3.454.0",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
     "@mui/icons-material": "^5.8.4",

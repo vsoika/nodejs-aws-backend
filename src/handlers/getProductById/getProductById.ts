@@ -1,5 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { products } from "../../mocks/productsStubs";
+import { getAllDataFromDB } from "../../utils/getAllDataFromDB";
+import { IProduct } from "../../types";
+import "dotenv/config";
 
 export const headers = {
   "Access-Control-Allow-Credentials": true,
@@ -12,7 +14,12 @@ export const lambdaHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   try {
     const productId = event.pathParameters?.productId;
-    const requestedProduct = products.find(({ id }) => id === productId);
+    const products = await getAllDataFromDB();
+    const requestedProduct = (products as IProduct[]).find(
+      ({ id }) => id === productId
+    );
+
+    console.log(`Lambda handler, event: ${event}`);
 
     if (!productId || !requestedProduct) {
       return {
