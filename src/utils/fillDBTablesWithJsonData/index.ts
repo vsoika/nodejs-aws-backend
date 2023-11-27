@@ -58,36 +58,3 @@ const fillDBTablesWithJsonData = async (tableName: string) => {
     console.error(err);
   }
 })();
-
-// import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-// import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
-// import "dotenv/config";
-
-// const client = new DynamoDBClient({});
-// const docClient = DynamoDBDocumentClient.from(client);
-
-// const main = async () => {
-//   const productCommand = new ScanCommand({
-//     TableName: process.env.AWS_DB_PRODUCT_TABLE,
-//   });
-//   const stockCommand = new ScanCommand({
-//     TableName: process.env.AWS_DB_STOCK_TABLE,
-//   });
-
-//   const productResponse = await docClient.send(productCommand);
-//   const stockResponse = await docClient.send(stockCommand);
-
-//   // console.log(response?.Items);
-
-//   const res = productResponse.Items?.map((productItem) => {
-//     const stock = stockResponse.Items?.find(
-//       (stockItem) => stockItem["product_id"] === productItem.id
-//     );
-//     if (stock) return { ...productItem, count: stock.count };
-//     return productItem;
-//   });
-
-//   console.log(res);
-// };
-
-// main();

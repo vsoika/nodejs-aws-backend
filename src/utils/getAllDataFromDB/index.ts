@@ -11,10 +11,10 @@ export const getAllDataFromDB = async (): Promise<
 > => {
   try {
     const productCommand = new ScanCommand({
-      TableName: 'product_model',
+      TableName: process.env.DB_PRODUCT_TABLE,
     });
     const stockCommand = new ScanCommand({
-      TableName: 'stock_model',
+      TableName: process.env.DB_STOCK_TABLE,
     });
 
     const productResponse = await docClient.send(productCommand);
@@ -30,6 +30,6 @@ export const getAllDataFromDB = async (): Promise<
 
     return combinedData as unknown as IProduct[];
   } catch (err) {
-    console.log(err, process.env.AWS_DB_PRODUCT_TABLE);
+    console.log(err);
   }
 };

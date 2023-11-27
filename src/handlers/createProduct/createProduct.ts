@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { headers } from "../getProductById/getProductById";
+import { v4 as uuid } from "uuid";
 
 import { validateProduct } from "../../utils/validateProduct";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -33,13 +34,15 @@ export const lambdaHandler = async (
       };
     }
 
+    const id = uuid();
+
     const command = new TransactWriteCommand({
       TransactItems: [
         {
           Put: {
-            TableName: process.env.AWS_DB_PRODUCT_TABLE,
+            TableName: process.env.DB_PRODUCT_TABLE,
             Item: {
-              id: body.id,
+              id: id,
               title: body.title,
               description: body.description,
               price: body.price,
@@ -48,9 +51,9 @@ export const lambdaHandler = async (
         },
         {
           Put: {
-            TableName: process.env.AWS_DB_STOCK_TABLE,
+            TableName: process.env.DB_STOCK_TABLE,
             Item: {
-              product_id: body.id,
+              product_id: id,
               count: body.count,
             },
           },
@@ -73,7 +76,7 @@ export const lambdaHandler = async (
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        message: "unable to create new product",
+        message: `unable to create new product`,
       }),
     };
   }
