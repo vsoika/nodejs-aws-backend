@@ -12,7 +12,9 @@ function matchProductSchema(obj: any): obj is IProduct {
     typeof obj.price === "number" &&
     typeof obj.count === "number";
 
-  return isAllKeysValid && isAllValueTypesValid;
+  const isValidValues = obj.price >= 0 && obj.count >= 0;
+
+  return isAllKeysValid && isAllValueTypesValid && isValidValues;
 }
 
 export const validateProduct = (data: any) => {
