@@ -1,10 +1,16 @@
 import { products } from "../../mocks/productsStubs";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { lambdaHandler as getProductById, headers } from "./getProductById";
+import * as getAllDataFromDB from "../../utils/getAllDataFromDB";
 
 const mockProduct = products[0];
 
 describe("getProductById", () => {
+  beforeEach(() => {
+    jest
+      .spyOn(getAllDataFromDB, "getAllDataFromDB")
+      .mockResolvedValue(products);
+  });
   it("should return successful response if a product exists", async () => {
     const mockEvent = {
       pathParameters: {

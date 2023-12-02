@@ -7,6 +7,8 @@
     "synth": "cdk synth",
     "cdk:bootstrap": "cdk bootstrap",
     "cdk:deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "fill:db": "ts-node src/utils/fillDBTablesWithJsonData/index.ts",
     "test": "jest",
     "lint": "eslint --ignore-path .gitignore --fix src",
     "prettier": "prettier src --write"
@@ -14,6 +16,9 @@
   "dependencies": {
     "@aws-cdk/aws-apigatewayv2-alpha": "^2.110.0-alpha.0",
     "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.110.0-alpha.0",
+    "@aws-sdk/client-dynamodb": "^3.454.0",
+    "@aws-sdk/lib-dynamodb": "^3.454.0",
+    "@aws-sdk/util-dynamodb": "^3.454.0",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
     "@mui/icons-material": "^5.8.4",
@@ -28,12 +33,14 @@
     "eslint-plugin-jest": "^27.6.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
+    "uuid": "^9.0.1",
     "yup": "^0.32.11"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.4",
     "@types/aws-lambda": "^8.10.126",
     "@types/node": "^10.17.0",
+    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "@vitest/ui": "^0.18.0",

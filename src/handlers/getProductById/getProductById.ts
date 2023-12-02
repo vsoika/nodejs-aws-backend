@@ -1,5 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { products } from "../../mocks/productsStubs";
+import { IProduct } from "../../types";
+import "dotenv/config";
+import { getOneProduct } from "../../utils/getOneProduct";
 
 export const headers = {
   "Access-Control-Allow-Credentials": true,
@@ -12,9 +14,21 @@ export const lambdaHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   try {
     const productId = event.pathParameters?.productId;
-    const requestedProduct = products.find(({ id }) => id === productId);
 
-    if (!productId || !requestedProduct) {
+    if (!productId) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({
+          message: "Product ID has not been provided",
+        }),
+      };
+    }
+    const [requestedProduct] = await getOneProduct(productId);
+
+    console.log(`Lambda handler, event: ${event}`);
+
+    if (!requestedProduct) {
       return {
         statusCode: 404,
         headers,
