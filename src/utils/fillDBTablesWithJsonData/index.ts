@@ -17,6 +17,7 @@ const stockData = products.map((item) => {
   return { product_id: item.id, count: item.count };
 });
 
+// TODO: refactor with using BatchWriteCommand
 const fillDBTablesWithJsonData = async (tableName: string) => {
   if (tableName === process.env.AWS_DB_STOCK_TABLE) {
     stockData.forEach(async (product) => {
