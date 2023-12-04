@@ -1,92 +1,86 @@
-import { Bucket } from "aws-cdk-lib/aws-s3";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-// import * as sdkStreamMixin from "@smithy/util-stream-node/dist-types/sdk-stream-mixin";
-import * as s3RequestPresigner from '@aws-sdk/s3-request-presigner'
-import { SdkStream, StreamingBlobPayloadOutputTypes } from "@smithy/types";
-import internal = require("stream");
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import * as s3RequestPresigner from "@aws-sdk/s3-request-presigner";
 import { mockClient } from "aws-sdk-client-mock";
-import { Readable } from "stream";
-import { lambdaHandler as importProductsFile } from "./importProductsFile";
-import { S3Event } from "aws-lambda";
-const csv = require('csv-parser');
+import {
+  headers,
+  lambdaHandler as importProductsFile,
+} from "./importProductsFile";
+import { APIGatewayProxyEvent } from "aws-lambda";
 
 const s3Mock = mockClient(S3Client);
-const mockKey = "key";
+const mockSignedUrl = "url";
 const mockEvent = {
-  Records: [{ s3: { object: { key: mockKey } } }],
-} as S3Event;
+  queryStringParameters: {
+    name: "test",
+  },
+} as unknown as APIGatewayProxyEvent;
 
-// jest.mock('@smithy/util-stream-node/dist-types/sdk-stream-mixin');
+jest.mock("@aws-sdk/s3-request-presigner", () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual("@aws-sdk/s3-request-presigner"),
+  };
+});
 
 describe("importProductsFile", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.clearAllMocks();
     s3Mock.reset();
-    jest.useFakeTimers({ advanceTimers: true });
-    // jest.useFakeTimers()
   });
 
   it("should return successful response", async () => {
-    // create Stream from string
-    // const stream = new Readable();
-    // stream.push("hello world");
-    // stream.push(null); // end of stream
+    jest
+      .spyOn(s3RequestPresigner, "getSignedUrl")
+      .mockResolvedValue(mockSignedUrl);
 
-    const mockStream = {
-      pipe: jest.fn().mockReturnThis(),
-      on: jest.fn().mockImplementation(function (event, handler) {
-        handler();
-        return;
-      }),
-    }
+    s3Mock.on(PutObjectCommand).resolves({});
 
-    // const mockSdkStreamMixin = jest.spyOn(sdkStreamMixin, "sdkStreamMixin");
-    // mockSdkStreamMixin.mockImplementation(
-    //   () => stream as SdkStream<internal.Readable>
-    // );
+    const result = await importProductsFile(mockEvent);
 
-    // // wrap the Stream with SDK mixin
-    // const sdkStream = sdkStreamMixin(stream);
-
-    s3Mock
-      .on(PutObjectCommand)
-      .resolves({});
-
-    // const s3 = new S3Client({});
-
-    // const getObjectResult = await s3.send(new GetObjectCommand({Bucket: '', Key: ''}));
-
-    // const str = await getObjectResult.Body?.transformToString();
-
-    // const result = await importProductsFile(mockEvent);
-
-    // console.log(result);
-
-    let isError = false;
-    // try {
-    //   await importProductsFile(mockEvent);
-    // } catch {
-    //   isError = true;
-    // }
-
-    // jest.setTimeout(100000);
-    await importProductsFile(mockEvent);
-
-    //  try {
-    //   await importProductsFile(mockEvent);
-    // } catch {
-    //   isError = true;
-    // }
-
-    expect(s3Mock.call(0).args[0].input).toEqual({
-      Bucket: process.env.S3_BUCKET,
-      Key: mockKey,
+    expect(result).toStrictEqual({
+      statusCode: 200,
+      body: JSON.stringify(mockSignedUrl),
+      headers,
     });
+  });
 
-    // expect(result).toStrictEqual({
-    //   statusCode: 200,
-    //   body: JSON.stringify(products),
-    //   headers,
-    // });
+  it("should return 404 when file name is not provided", async () => {
+    const mockEvent = {
+      queryStringParameters: {},
+    } as unknown as APIGatewayProxyEvent;
+
+    jest
+      .spyOn(s3RequestPresigner, "getSignedUrl")
+      .mockResolvedValue(mockSignedUrl);
+
+    s3Mock.on(PutObjectCommand).resolves({});
+
+    const result = await importProductsFile(mockEvent);
+
+    expect(result).toStrictEqual({
+      statusCode: 404,
+      body: JSON.stringify({
+        message: "File name is not provided",
+      }),
+      headers,
+    });
+  });
+
+  it("should return 500 status code when server error happened", async () => {
+    jest
+      .spyOn(s3RequestPresigner, "getSignedUrl")
+      .mockRejectedValue('');
+
+    s3Mock.on(PutObjectCommand).rejects();
+
+    const result = await importProductsFile(mockEvent);
+
+    expect(result).toStrictEqual({
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "some error happened",
+      }),
+      headers,
+    });
   });
 });
