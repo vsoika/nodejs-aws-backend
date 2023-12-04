@@ -1,4 +1,9 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import * as sdkStreamMixin from "@aws-sdk/util-stream-node";
 import { SdkStream, StreamingBlobPayloadOutputTypes } from "@smithy/types";
 import internal = require("stream");
@@ -12,9 +17,18 @@ const mockEvent = {
   Records: [{ s3: { object: { key: mockKey } } }],
 } as S3Event;
 
+const mockStreamOn = jest
+  .fn()
+  .mockImplementation(function (this: any, event, handler) {
+    if (event === "end" || "error") {
+      handler();
+    }
+    return this;
+  });
+
 const mockStream = {
   pipe: jest.fn().mockReturnThis(),
-  on: jest.fn(),
+  on: mockStreamOn,
 };
 
 jest.mock("@aws-sdk/util-stream-node", () => {
@@ -40,17 +54,29 @@ describe("importFileParser", () => {
       .on(GetObjectCommand)
       .resolves({ Body: {} as StreamingBlobPayloadOutputTypes });
 
+    s3Mock.on(CopyObjectCommand).resolves({});
+    s3Mock.on(DeleteObjectCommand).resolves({});
+
+    const logSpy = jest.spyOn(console, "log");
+
     try {
       await importFileParser(mockEvent);
-    } catch {
-    }
+    } catch {}
 
     expect(s3Mock.call(0).args[0].input).toEqual({
       Bucket: process.env.S3_BUCKET,
       Key: mockKey,
     });
+  
     expect(mockStream.pipe).toHaveBeenCalledTimes(1);
     expect(mockStream.on).toHaveBeenCalledWith("data", expect.any(Function));
+    expect(mockStream.on).toHaveBeenCalledWith("end", expect.any(Function));
+    expect(logSpy).toHaveBeenCalledWith(
+      `${mockKey} file is successfully copied to /parsed folder`
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      `${mockKey} file is successfully deleted from /uploaded folder`
+    );
   });
 
   it("should handle failed response", async () => {

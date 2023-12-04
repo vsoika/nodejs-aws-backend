@@ -55,6 +55,7 @@ const importProductsFileIntegration = new apiGateway.LambdaIntegration(
 
 s3Bucket.grantReadWrite(importProductsFileFn);
 s3Bucket.grantReadWrite(importFileParserFn);
+s3Bucket.grantDelete(importFileParserFn);
 
 importFileParserFn.addEventSource(
   new S3EventSource(s3Bucket, {

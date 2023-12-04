@@ -45,7 +45,7 @@ export const lambdaHandler = async (
               const copyCommand = new CopyObjectCommand({
                 Bucket: process.env.S3_BUCKET,
                 Key: key.replace("uploaded", "parsed"),
-                CopySource: key,
+                CopySource: `${process.env.S3_BUCKET}/${key}`,
               });
               await s3Client.send(copyCommand);
               console.log(
