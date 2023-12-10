@@ -28,6 +28,8 @@ const lambdaProps: Partial<NodejsFunctionProps> = {
   environment: {
     PRODUCT_AWS_REGION: process.env.AWS_REGION as string,
     S3_BUCKET: process.env.S3_BUCKET as string,
+    SQS_QUEUE: process.env.SQS_QUEUE as string,
+    SNS_PRODUCT_TOPIC_ARN: process.env.SNS_PRODUCT_TOPIC_ARN as string,
   },
 };
 
@@ -60,7 +62,7 @@ s3Bucket.grantDelete(importFileParserFn);
 importFileParserFn.addEventSource(
   new S3EventSource(s3Bucket, {
     events: [s3.EventType.OBJECT_CREATED],
-    filters: [{ prefix: "uploaded/" }],
+    filters: [{ prefix: "uploaded/", suffix: ".csv" }],
   })
 );
 

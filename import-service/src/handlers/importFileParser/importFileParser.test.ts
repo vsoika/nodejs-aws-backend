@@ -5,6 +5,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import * as sdkStreamMixin from "@aws-sdk/util-stream-node";
+import * as sendDataToSqs from "../../utils/sendDataToSqs/sendDataToSqs";
 import { SdkStream, StreamingBlobPayloadOutputTypes } from "@smithy/types";
 import internal = require("stream");
 import { mockClient } from "aws-sdk-client-mock";
@@ -38,6 +39,8 @@ jest.mock("@aws-sdk/util-stream-node", () => {
   };
 });
 
+const mockSendDataToSqs = jest.fn();
+
 describe("importFileParser", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -47,6 +50,10 @@ describe("importFileParser", () => {
     mockSdkStreamMixin.mockImplementation(
       () => mockStream as unknown as SdkStream<internal.Readable>
     );
+
+    jest
+      .spyOn(sendDataToSqs, "sendDataToSqs")
+      .mockImplementation(mockSendDataToSqs);
   });
 
   it("should return successful response", async () => {
@@ -67,7 +74,7 @@ describe("importFileParser", () => {
       Bucket: process.env.S3_BUCKET,
       Key: mockKey,
     });
-  
+
     expect(mockStream.pipe).toHaveBeenCalledTimes(1);
     expect(mockStream.on).toHaveBeenCalledWith("data", expect.any(Function));
     expect(mockStream.on).toHaveBeenCalledWith("end", expect.any(Function));
@@ -77,6 +84,7 @@ describe("importFileParser", () => {
     expect(logSpy).toHaveBeenCalledWith(
       `${mockKey} file is successfully deleted from /uploaded folder`
     );
+    expect(mockSendDataToSqs).toHaveBeenCalled();
   });
 
   it("should handle failed response", async () => {
