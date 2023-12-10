@@ -1,5 +1,4 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { IProduct } from "../../types";
 import "dotenv/config";
 import { getOneProduct } from "../../utils/getOneProduct";
 
