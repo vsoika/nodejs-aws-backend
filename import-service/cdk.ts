@@ -66,6 +66,12 @@ importFileParserFn.addEventSource(
   })
 );
 
+const basicAuthorizerFn = lambda.Function.fromFunctionArn(
+  stack,
+  "BasicAuthorizerLambda",
+  process.env.AUTH_LAMBDA_ARN as string
+);
+
 const api = new apiGateway.RestApi(stack, "ImportApi", {
   restApiName: "ImportServiceApi",
   defaultCorsPreflightOptions: {
@@ -75,12 +81,45 @@ const api = new apiGateway.RestApi(stack, "ImportApi", {
   },
 });
 
+api.addGatewayResponse('ImportProductsAuth403', {
+  type: apiGateway.ResponseType.ACCESS_DENIED,
+  statusCode: '403',
+  responseHeaders: {
+    'Access-Control-Allow-Origin': "'*'",
+  }
+});
+
+api.addGatewayResponse('ImportProductsAuth401', {
+  type: apiGateway.ResponseType.UNAUTHORIZED,
+  statusCode: '401',
+  responseHeaders: {
+    'Access-Control-Allow-Origin': "'*'",
+  }
+});
+
+const authorizer = new apiGateway.TokenAuthorizer(
+  stack,
+  "CustomBasicAuthAuthorizer",
+  {
+    handler: basicAuthorizerFn,
+    identitySource: "method.request.header.Authorization",
+  }
+);
+
+new lambda.CfnPermission(stack, "AuthorizerPermission", {
+  action: "lambda:InvokeFunction",
+  functionName: basicAuthorizerFn.functionName,
+  principal: "apigateway.amazonaws.com",
+  sourceAccount: stack.account,
+});
+
 const importResource = api.root.addResource(IMPORT_URL);
 
 importResource.addMethod("GET", importProductsFileIntegration, {
   requestParameters: {
     "method.request.querystring.name": true,
   },
+  authorizer
 });
 
 new cdk.CfnOutput(stack, "ApiUrl", {
