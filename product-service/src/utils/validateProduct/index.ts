@@ -9,8 +9,8 @@ function matchProductSchema(obj: any): obj is IProduct {
   const isAllValueTypesValid =
     typeof obj.title === "string" &&
     typeof obj.description === "string" &&
-    typeof obj.price === "number" &&
-    typeof obj.count === "number";
+    typeof Number(obj.price) === "number" &&
+    typeof Number(obj.count) === "number";
 
   const isValidValues = obj.price >= 0 && obj.count >= 0;
 

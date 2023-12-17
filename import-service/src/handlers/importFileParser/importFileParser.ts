@@ -6,6 +6,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
 import { S3Event } from "aws-lambda";
+import { IProduct } from "../../types";
+import { sendDataToSqs } from "../../utils/sendDataToSqs/sendDataToSqs";
 const csv = require("csv-parser");
 
 export const lambdaHandler = async (
@@ -25,6 +27,8 @@ export const lambdaHandler = async (
 
       console.log("Key: ", key);
 
+      const records: IProduct[] = [];
+
       const { Body } = await s3Client.send(new GetObjectCommand(params));
 
       const stream = await sdkStreamMixin(Body);
@@ -33,7 +37,7 @@ export const lambdaHandler = async (
         stream
           .pipe(csv())
           .on("data", (data: any) => {
-            console.log(`csv data: ${JSON.stringify(data)}`);
+            records.push(data);
           })
           .on("error", (error: any) => {
             console.error(error);
@@ -56,6 +60,8 @@ export const lambdaHandler = async (
               console.log(
                 `${key} file is successfully deleted from /uploaded folder`
               );
+
+              await sendDataToSqs(records);
             } catch (err) {
               console.log(`onEnd error: ${err}`);
             }
