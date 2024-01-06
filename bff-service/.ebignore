@@ -1,0 +1,48 @@
+# You can tell the EB CLI to ignore certain files in your project directory with a .ebignore file.
+# This file works like a .gitignore. When you deploy your project directory to Elastic Beanstalk
+# and create a new application version, the EB CLI will not include files specified by the .ebignore
+# in the source bundle that it creates.
+
+# If no .ebignore is present, but a .gitignore is, the EB CLI will ignore files specified in the .gitignore.
+# If an .ebignore file is present, the EB CLI will not read the .gitignore.
+
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# compiled output
+/dist
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

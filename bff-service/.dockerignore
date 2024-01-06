@@ -1,0 +1,32 @@
+# Versioning and metadata
+.git
+.gitignore
+.dockerignore
+
+# Build dependencies
+dist
+node_modules
+coverage
+npm-debug.log
+
+# Environment (contains sensitive data)
+.env
+
+# Files not required for production
+Dockerfile
+README.md
+
+# Typescript v1 declaration files
+typings/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# github related files
+.github/
+
+# Tests
+test
